@@ -12,7 +12,7 @@ import {
   ScrollView,
   Alert
 } from 'react-native';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../src/context/AuthContext';
 
 type Props = {
   navigation: any; // Use proper navigation type from @react-navigation/native

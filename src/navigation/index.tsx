@@ -7,12 +7,12 @@ import { ActivityIndicator, View } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 
 // Auth Screens
-import LoginScreen from '../screens/LoginScreen';
+import LoginScreen from '../../app/(tabs)/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
 
 // Main App Screens
 import HomeScreen from '../../app/(tabs)/index';
-import ProfileScreen from '../../app/(tabs)/profile';
+import ProfileScreen from '../../app/profile';
 // ...other screens
 
 const Stack = createStackNavigator();

@@ -1,12 +1,43 @@
 import React, { useEffect } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '../hooks/useFrameworkReady';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { SplashScreen } from 'expo-router';
-import { AuthProvider } from '../src/context/AuthContext'; // Only import AuthProvider here
+import { AuthProvider } from '../src/context/AuthContext';
+import { useAuth } from '../src/context/AuthContext';
 
-SplashScreen.preventAutoHideAsync();
+function useProtectedRoute(user: any) {
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    const inAuthGroup = segments[0] === 'auth';
+
+    if (!user && !inAuthGroup) {
+      // Redirect to login if not authenticated and not already in auth group
+      router.replace('/auth/login');
+    } else if (user && inAuthGroup) {
+      // Redirect to profile if authenticated but still in auth group
+      router.replace('../(tabs)/profile');
+    }
+  }, [user, segments]);
+}
+
+function RootLayoutNav() {
+  const { user } = useAuth();
+  
+  // Use the custom hook to protect routes
+  useProtectedRoute(user);
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="auth" options={{ headerShown: false }} />
+      <Stack.Screen name="+not-found" options={{ title: 'Not Found' }} />
+    </Stack>
+  );
+}
 
 export default function RootLayout() {
   useFrameworkReady();
@@ -25,17 +56,12 @@ export default function RootLayout() {
   }, [fontsLoaded, fontError]);
 
   if (!fontsLoaded && !fontError) {
-    return null; // Show nothing while loading
+    return null;
   }
 
   return (
-    <AuthProvider> {/* Wrap the entire app with AuthProvider */}
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/LoginScreen" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/SignupScreen" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+    <AuthProvider>
+      <RootLayoutNav />
       <StatusBar style="auto" />
     </AuthProvider>
   );
