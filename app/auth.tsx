@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'reac
 import { useAuth } from '../src/context/AuthContext'; // Fixed import path
 import { useRouter } from 'expo-router'; // Added for navigation
 
-export function LoginScreen() {
+function LoginScreen({ setIsLogin }: { setIsLogin: (value: boolean) => void }) {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,14 +39,14 @@ export function LoginScreen() {
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push('../auth/SignupScreen')}>
+      <TouchableOpacity onPress={() => setIsLogin(false)}>
         <Text style={styles.link}>Don't have an account? Sign up</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
-export function SignupScreen() {
+export function SignupScreen({ setIsLogin }: { setIsLogin: (value: boolean) => void }) {
   const { register } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -57,7 +57,7 @@ export function SignupScreen() {
     try {
       await register(name, email, password);
       Alert.alert('Signup Successful', 'You can now log in.');
-      router.replace('../auth/LoginScreen'); // Navigate to login screen
+      setIsLogin(true); // Switch to login screen
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Please try again.';
       Alert.alert('Signup Failed', errorMessage);
@@ -89,7 +89,21 @@ export function SignupScreen() {
       <TouchableOpacity style={styles.button} onPress={handleSignup}>
         <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
+      <TouchableOpacity onPress={() => setIsLogin(true)}>
+        <Text style={styles.link}>Already have an account? Login</Text>
+      </TouchableOpacity>
     </View>
+  );
+}
+
+// Main Auth component that handles both login and signup
+export default function Auth() {
+  const [isLogin, setIsLogin] = useState(true);
+
+  return isLogin ? (
+    <LoginScreen setIsLogin={setIsLogin} />
+  ) : (
+    <SignupScreen setIsLogin={setIsLogin} />
   );
 }
 

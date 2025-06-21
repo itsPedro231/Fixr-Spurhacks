@@ -5,6 +5,7 @@ import { useFrameworkReady } from '../hooks/useFrameworkReady';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { SplashScreen } from 'expo-router';
 import { AuthProvider } from '../src/context/AuthContext'; // Only import AuthProvider here
+import { ProtectedRoute } from '../components/ProtectedRoute';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -30,12 +31,13 @@ export default function RootLayout() {
 
   return (
     <AuthProvider> {/* Wrap the entire app with AuthProvider */}
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/LoginScreen" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/SignupScreen" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+      <ProtectedRoute>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="auth" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+      </ProtectedRoute>
       <StatusBar style="auto" />
     </AuthProvider>
   );
