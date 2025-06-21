@@ -1,13 +1,6 @@
 from fastapi import FastAPI
 
+from api.routes import router as api_router
+
 app = FastAPI()
-
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
-
-if __name__ == "__main__":
-    app = FastAPI()
+app.include_router(api_router)
