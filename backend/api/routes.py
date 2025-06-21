@@ -1,7 +1,7 @@
 import base64
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from utils.geminiHandler import processImage
-from utils.openAIUtils.py import postMessage
+from utils.openAIUtils import postMessage
 
 router = APIRouter()
 
