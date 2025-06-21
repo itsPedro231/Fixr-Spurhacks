@@ -33,5 +33,5 @@ async def analyze_image(message: Message, image: UploadFile = File(...)):
     result = await processImage(image_b64)
     
     message.content = result
-    await sendMessage(message)
-    return {"analysis": result}
+    gemini_result = await sendMessage(message)
+    return {"analysis": result, "gemini_result": gemini_result}
