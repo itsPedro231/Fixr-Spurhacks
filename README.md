@@ -1,1 +1,4 @@
 # spurhacks
+
+Hackathon project.
+
