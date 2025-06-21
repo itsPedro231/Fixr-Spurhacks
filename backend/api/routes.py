@@ -14,8 +14,3 @@ async def root():
 async def uploadImage():
     processImage()
     return {"message": "Hello World"}
-
-@router.get("/send-message-gpt")
-async def postMessage():
-    
-
