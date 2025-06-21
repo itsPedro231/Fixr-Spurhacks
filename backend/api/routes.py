@@ -1,7 +1,7 @@
 import base64
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from utils.geminiHandler import processImage
-
+from utils.openAIUtils.py import postMessage
 
 router = APIRouter()
 
@@ -22,3 +22,8 @@ async def analyze_image(image: UploadFile = File(...)):
     image_b64 = base64.b64encode(image_bytes).decode('utf-8')
     result = await processImage(image_b64)
     return {"analysis": result}
+
+@router.get("/send-message-gpt")
+async def sendMessage():
+    postMessage()
+    return {"message": "Hello World"}
