@@ -21,8 +21,8 @@ async def sendMessage(message: Message):
         tid = message.threadID
     tid, res = postMessage(tid, message.content)
     res2 = runThread(tid)
-    getMessage(tid)
-    return {"threadID": tid, "message": res, "message2": res2}
+    # res3 = getMessage(tid)
+    return {"threadID": tid, "message2": res2}
 
 
 @router.post("/analyze-image/")
