@@ -102,7 +102,8 @@ def runThread(threadID):
 
     return None
 
-
+def getData():
+    return 
 # def getMessage(threadID):
 #    url = f"https://api.openai.com/v1/threads/{threadID}/messages"
 #    headers = {
