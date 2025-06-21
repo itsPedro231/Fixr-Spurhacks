@@ -1,4 +1,9 @@
 from dotenv import load_dotenv
+<<<<<<< HEAD
+=======
+import requests
+import json
+>>>>>>> fb30100f670c76cb806097bf306357db682c4977
 import os
 import requests
 
