@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router'; // Add router for navigation
 export default function ProfileScreen() {
   const [notifications, setNotifications] = useState(true);
   const [locationSharing, setLocationSharing] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false); // Add loading state
   const { logout } = useAuth();
   const router = useRouter(); // Initialize router
 
@@ -87,13 +88,27 @@ export default function ProfileScreen() {
     Alert.alert('Edit Profile', 'Profile editing coming soon!');
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Sign Out', style: 'destructive', onPress: () => confirmLogout()}
+      ]
+    );
+  };
+
+  const confirmLogout = async () => {
+    setLoggingOut(true); // Start loading
     try {
       await logout();
-      router.replace('../auth/LoginScreen');
+      router.replace('/auth'); // Redirect to auth screen after logout
     } catch (error) {
       console.error('Logout failed:', error);
       Alert.alert('Error', 'Failed to log out.');
+    } finally {
+      setLoggingOut(false); // End loading
     }
   };
 
@@ -263,9 +278,9 @@ export default function ProfileScreen() {
 
         {/* Logout */}
         <View style={styles.section}>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} disabled={loggingOut}>
             <LogOut size={20} color="#DC2626" />
-            <Text style={styles.logoutText}>Sign Out</Text>
+            <Text style={styles.logoutText}>{loggingOut ? 'Signing Out...' : 'Sign Out'}</Text>
           </TouchableOpacity>
         </View>
 
