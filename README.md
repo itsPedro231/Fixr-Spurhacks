@@ -4,7 +4,7 @@ Hackathon project.
 
 ## Backend
 
-  Run these on terminal to create virtual environment, update pip and install necessary packages.
+  Run these in terminal to create virtual environment, update pip and install necessary packages.
 
   ```python
   python -m venv .venv
