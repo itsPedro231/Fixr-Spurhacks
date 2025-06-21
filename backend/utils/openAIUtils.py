@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
-import requests
 import os
+import requests
 
 load_dotenv()
 API_KEY = os.getenv("OPENAI_API_KEY")
@@ -18,7 +18,7 @@ def createThread():
 
         if response.status_code == 200:  # valid
             thread_data = response.json()
-            return thread_data
+            return thread_data["id"]
 
         else:
             raise Exception(
@@ -43,7 +43,7 @@ def postMessage(threadID, content):
         json={"role": "user", "content": content},
     )
 
-    return res
+    return threadID, res.content.decode()
 
 
 def runThread(threadID):
