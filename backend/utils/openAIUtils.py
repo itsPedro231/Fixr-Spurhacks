@@ -58,3 +58,28 @@ def runThread(threadID):
     )
     print(res.content.decode())
     return res.content.decode()
+
+def getMessage(threadID):
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {API_KEY}",
+        "OpenAI-Beta": "assistants=v2"
+    }
+    params = {
+        "limit": "1",
+        "order": "desc"
+    }
+    try:
+        response = requests.get(url, headers=headers, params=params)
+
+        if response.status_code == 200:
+            data = response.json()
+            message = data["data"][0]['content'][0]['text']['value']
+            return message
+        else:
+            print(f"Failed to get Gemini message: {response.status_code} - {response.text}")
+            return None
+
+    except Exception as e:
+        print(f"Error while getting Gemini message: {e}")
+        return None
