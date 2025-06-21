@@ -4,7 +4,6 @@ from utils.geminiHandler import processImage
 from utils.openAIUtils import createThread, postMessage, runThread
 import base64
 from fastapi import APIRouter, File, HTTPException, UploadFile
-import Message
 
 router = APIRouter()
 
@@ -31,7 +30,8 @@ async def analyze_image(message: Message, image: UploadFile = File(...)):
     image_bytes = await image.read()
     image_b64 = base64.b64encode(image_bytes).decode("utf-8")
     result = await processImage(image_b64)
-    
-    message.content = result
-    gemini_result = await sendMessage(message)
+
+    gemini_result = await sendMessage(
+        Message(threadID=message.threadID, content=str(result))
+    )
     return {"analysis": result, "gemini_result": gemini_result}
