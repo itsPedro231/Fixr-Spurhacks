@@ -88,18 +88,7 @@ export default function ProfileScreen() {
     Alert.alert('Edit Profile', 'Profile editing coming soon!');
   };
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Sign Out', style: 'destructive', onPress: () => confirmLogout()}
-      ]
-    );
-  };
-
-  const confirmLogout = async () => {
+  const handleLogout = async () => {
     setLoggingOut(true); // Start loading
     try {
       await logout();
