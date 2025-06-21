@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { User, MapPin, Bell, CreditCard, Star, Clock, Settings, CircleHelp as HelpCircle, Shield, LogOut, ChevronRight, CreditCard as Edit3, Award, Calendar } from 'lucide-react-native';
-import { useAuth } from 'src/context/AuthContext'; // Fix import path
+import { useAuth } from '../../src/context/AuthContext'; // Fix import path
 import { useRouter } from 'expo-router'; // Add router for navigation
 
 export default function ProfileScreen() {
@@ -87,19 +87,25 @@ export default function ProfileScreen() {
     Alert.alert('Edit Profile', 'Profile editing coming soon!');
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     Alert.alert(
       'Sign Out',
       'Are you sure you want to sign out?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Sign Out', style: 'destructive', onPress: async () => {
-            await logout();
-            router.replace('../auth/LoginScreen'); // Navigate to LoginScreen after logout
-          }
-        }
+        { text: 'Sign Out', style: 'destructive', onPress: () => confirmLogout()}
       ]
     );
+  };
+
+  const confirmLogout = async () => {
+    try {
+      await logout();
+      router.replace('../auth/LoginScreen');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      Alert.alert('Error', 'Failed to log out.');
+    }
   };
 
   return (
