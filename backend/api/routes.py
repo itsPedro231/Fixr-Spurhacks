@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from utils.geminiHandler import processImage
 
+
 router = APIRouter()
 
 
@@ -12,4 +13,4 @@ async def root():
 @router.get("/upload-image")
 async def uploadImage():
     processImage()
-    return {"message": "Upload image here"}
+    return {"message": "Hello World"}
