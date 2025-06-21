@@ -1,8 +1,6 @@
 from dotenv import load_dotenv
 import requests
-import json
 import os
-import requests
 
 load_dotenv()
 API_KEY = os.getenv("OPENAI_API_KEY")
@@ -58,4 +56,5 @@ def runThread(threadID):
         },
         json={"assistant_id": ASSISTANT_ID},
     )
-    return res
+    print(res.content.decode())
+    return res.content.decode()

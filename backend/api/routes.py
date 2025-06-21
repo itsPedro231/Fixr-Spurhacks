@@ -1,11 +1,9 @@
 from models.message import Message
 from fastapi import APIRouter
 from utils.geminiHandler import processImage
-from utils.openAIUtils import createThread, postMessage
+from utils.openAIUtils import createThread, postMessage, runThread
 import base64
 from fastapi import APIRouter, File, HTTPException, UploadFile
-from utils.geminiHandler import processImage
-from utils.openAIUtils import postMessage
 
 router = APIRouter()
 
@@ -15,13 +13,15 @@ async def root():
     return {"message": "Hello World"}
 
 
+@router.post("/send-message-gpt")
 async def sendMessage(message: Message):
     if message.threadID == "":
         tid = createThread()
     else:
         tid = message.threadID
     tid, res = postMessage(tid, message.content)
-    return {"threadID": tid, "message": res}
+    res2 = runThread(tid)
+    return {"threadID": tid, "message": res, "message2": res2}
 
 
 @router.post("/analyze-image/")
