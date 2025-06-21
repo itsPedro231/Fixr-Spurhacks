@@ -35,3 +35,18 @@ async def analyze_image(message: Message, image: UploadFile = File(...)):
         Message(threadID=message.threadID, content=str(result))
     )
     return {"analysis": result, "gemini_result": gemini_result}
+
+
+@router.post("/test-openai-gemini/")
+async def test_openai_gemini(image: UploadFile = File(...)):
+    image_bytes = await image.read()
+    image_b64 = base64.b64encode(image_bytes).decode("utf-8")
+    gemini_result = await processImage(image_b64)
+
+    openai_thread_id = createThread()
+    _, openai_response = postMessage(openai_thread_id, str(gemini_result))
+    final_response = runThread(openai_thread_id)
+
+    return {
+        "openai_response": final_response,
+    }
