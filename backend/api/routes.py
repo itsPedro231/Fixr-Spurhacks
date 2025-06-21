@@ -12,4 +12,4 @@ async def root():
 @router.get("/upload-image")
 async def uploadImage():
     processImage()
-    return {"message": "Hello World"}
+    return {"message": "Upload image here"}
