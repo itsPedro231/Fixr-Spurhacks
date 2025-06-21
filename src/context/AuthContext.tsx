@@ -93,7 +93,6 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
     try {
       await AsyncStorage.removeItem('token');
       await AsyncStorage.removeItem('user');
-      
       setToken(null);
       setUser(null);
     } catch (e) {

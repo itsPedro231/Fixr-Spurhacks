@@ -2,10 +2,14 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { User, MapPin, Bell, CreditCard, Star, Clock, Settings, CircleHelp as HelpCircle, Shield, LogOut, ChevronRight, CreditCard as Edit3, Award, Calendar } from 'lucide-react-native';
+import { useAuth } from 'src/context/AuthContext'; // Fix import path
+import { useRouter } from 'expo-router'; // Add router for navigation
 
 export default function ProfileScreen() {
   const [notifications, setNotifications] = useState(true);
   const [locationSharing, setLocationSharing] = useState(true);
+  const { logout } = useAuth();
+  const router = useRouter(); // Initialize router
 
   const userStats = {
     totalBookings: 12,
@@ -83,13 +87,17 @@ export default function ProfileScreen() {
     Alert.alert('Edit Profile', 'Profile editing coming soon!');
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     Alert.alert(
       'Sign Out',
       'Are you sure you want to sign out?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Sign Out', style: 'destructive', onPress: () => Alert.alert('Signed Out', 'You have been signed out.') }
+        { text: 'Sign Out', style: 'destructive', onPress: async () => {
+            await logout();
+            router.replace('../auth/LoginScreen'); // Navigate to LoginScreen after logout
+          }
+        }
       ]
     );
   };

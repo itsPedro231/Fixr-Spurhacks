@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Camera, Upload, Zap, MapPin, Star, Clock } from 'lucide-react-native';
-import { CameraComponent } from '@/components/CameraComponent';
-import { ProblemForm } from '@/components/ProblemForm';
-import { TechnicianCard } from '@/components/TechnicianCard';
+import { CameraComponent } from 'components/CameraComponent';
+import { ProblemForm } from 'components/ProblemForm';
+import { TechnicianCard } from 'components/TechnicianCard';
 
 interface Technician {
   id: string;
