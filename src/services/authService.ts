@@ -1,7 +1,7 @@
 // src/services/authService.ts
 import axios from 'axios';
 
-const API_URL = 'http://your-api-url/api/auth';
+const API_URL = 'http://localhost:5012/api/auth';
 
 export type AuthResponse = {
   token: string;
