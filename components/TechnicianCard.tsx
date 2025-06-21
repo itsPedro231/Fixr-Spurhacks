@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Star, MapPin, Clock, MessageCircle, Phone } from 'lucide-react-native';
 
