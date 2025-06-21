@@ -1,3 +1,4 @@
+import React from 'react';
 import { Tabs } from 'expo-router';
 import { Home, Wrench, MessageCircle, User } from 'lucide-react-native';
 
