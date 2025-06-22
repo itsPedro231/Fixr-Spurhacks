@@ -45,6 +45,38 @@ export function ProblemForm({ capturedImage, onSubmit, onBack }: ProblemFormProp
     try {
       setIsSubmitting(true);
       
+      let aiAnalysis = null;
+      
+      // If there's a captured image, analyze it with the backend
+      if (capturedImage) {
+        try {
+          const formData = new FormData();
+          formData.append('image', {
+            uri: capturedImage,
+            name: 'problem-image.jpg',
+            type: 'image/jpeg',
+          } as any);
+          formData.append('message', JSON.stringify({
+            threadID: "",
+            content: `Problem description: ${description.trim()}. Category: ${category}. Urgency: ${urgency}. Please analyze this image and provide diagnosis.`
+          }));
+
+          const response = await fetch('http://127.0.0.1:8000/analyze-image/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+            body: formData,
+          });
+
+          const data = await response.json();
+          aiAnalysis = data.gemini_result?.message2 || data.analysis;
+        } catch (error) {
+          console.error('Error analyzing image:', error);
+          // Continue without AI analysis if image analysis fails
+        }
+      }
+      
       const formData = {
         description: description.trim(),
         category,
@@ -52,10 +84,8 @@ export function ProblemForm({ capturedImage, onSubmit, onBack }: ProblemFormProp
         location: location.trim(),
         image: capturedImage,
         timestamp: new Date().toISOString(),
+        aiAnalysis, // Include AI analysis if available
       };
-
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
       
       onSubmit(formData);
     } catch (error) {

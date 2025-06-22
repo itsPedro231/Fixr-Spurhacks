@@ -1,8 +1,9 @@
 from models.message import Message
-from fastapi import APIRouter
+from fastapi import APIRouter, Form
 from utils.geminiHandler import processImage
 from utils.openAIUtils import createThread, postMessage, runThread
 import base64
+import json
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
 router = APIRouter()
@@ -26,15 +27,28 @@ async def sendMessage(message: Message):
 
 
 @router.post("/analyze-image/")
-async def analyze_image(message: Message, image: UploadFile = File(...)):
+async def analyze_image(content: str = Form(...),
+    threadID: str | None = Form(None),
+    image: UploadFile = File(...)
+):
+    # Create a Message instance from form fields
+    message = Message(threadID=threadID, content=content)
+
+    # Read and encode image
     image_bytes = await image.read()
     image_b64 = base64.b64encode(image_bytes).decode("utf-8")
+
+    # Call your image processing and Gemini logic
     result = await processImage(image_b64)
 
     gemini_result = await sendMessage(
         Message(threadID=message.threadID, content=str(result))
     )
-    return {"analysis": result, "gemini_result": gemini_result}
+
+    return {
+        "analysis": result,
+        "gemini_result": gemini_result
+    }
 
 
 @router.post("/test-openai-gemini/")

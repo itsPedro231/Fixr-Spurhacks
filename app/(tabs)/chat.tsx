@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Send, Bot, User, Lightbulb, CircleAlert as AlertCircle, CircleCheck as CheckCircle, Camera } from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
+
 
 interface Message {
   id: string;
@@ -58,7 +60,7 @@ export default function ChatScreen() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          threadID: "some-thread-id",  // you can pass your threadID if needed
+          threadID: "",  // Empty string for new thread, or pass existing threadID
           content: text.trim()
         })
       });
@@ -67,16 +69,24 @@ export default function ChatScreen() {
   
       const aiResponse: Message = {
         id: Date.now().toString(),
-        text: data.reply,  // this depends on how your backend returns the result
+        text: data.message2 || "Sorry, I couldn't process your request.",  // Updated to match backend response
         sender: 'ai',
         timestamp: new Date(),
-        type: 'text'  // if your backend returns a type, you can set it dynamically
+        type: 'text'
       };
   
       setMessages(prev => [...prev, aiResponse]);
     } catch (error) {
       console.error("Error sending message:", error);
-      // optionally show error message to user
+      // Show error message to user
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        text: "Sorry, there was an error processing your message. Please try again.",
+        sender: 'ai',
+        timestamp: new Date(),
+        type: 'text'
+      };
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsTyping(false);
     }
@@ -128,52 +138,60 @@ export default function ChatScreen() {
   // };
 
   const handleImageUpload = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
+     // Ask for permission to access media library
+  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (status !== 'granted') {
+    alert('Permission denied!');
+    return;
+  }
+
+  // Open image picker
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    aspect: [4, 3],
+    quality: 1,
+  });
+
+  // If user cancels
+  if (result.canceled || !result.assets || result.assets.length === 0) {
+    console.log('No image selected');
+    return;
+  }
+
+  const image = result.assets[0];
+  const localUri = image.uri;
+  const filename = localUri.split('/').pop();
+
+  // Infer the file type
+  const match = /\.(\w+)$/.exec(filename ?? '');
+  const type = match ? `image/${match[1]}` : `image`;
+
+  // Prepare form data
+  const formData = new FormData();
+  formData.append('image', {
+    uri: localUri,
+    name: filename,
+    type,
+  });
+  formData.append('threadID', "");
+  formData.append('content', "");
+
+  try {
+    const response = await fetch('http://127.0.0.1:8000/test-openai-gemini/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      body: formData,
     });
 
-    if (!result.cancelled && result.assets && result.assets.length > 0) {
-      const image = result.assets[0];
+    const data = await response.json();
+    console.log('Server response:', data);
+  } catch (error) {
+    console.error('Upload failed:', error);
+  }
 
-      const formData = new FormData();
-      formData.append('image', {
-        uri: image.uri,
-        name: 'photo.jpg',
-        type: 'image/jpeg',
-      } as any);
-
-      setIsTyping(true);
-
-      try {
-        const response = await fetch('http://<YOUR_BACKEND_URL>/analyze-image', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          body: formData,
-        });
-
-        const data = await response.json();
-
-        const aiResponse: Message = {
-          id: Date.now().toString(),
-          text: data.analysis || "Image analyzed successfully.",
-          sender: 'ai',
-          timestamp: new Date(),
-          type: 'diagnosis'
-        };
-
-        setMessages(prev => [...prev, aiResponse]);
-      } catch (error) {
-        console.error('Error analyzing image:', error);
-        Alert.alert("Error", "Failed to analyze image.");
-      } finally {
-        setIsTyping(false);
-      }
-    }
   };
 
   const renderMessage = (message: Message) => {
