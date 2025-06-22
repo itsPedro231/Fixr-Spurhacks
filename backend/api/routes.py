@@ -27,12 +27,11 @@ async def sendMessage(message: Message):
 
 
 @router.post("/analyze-image/")
-async def analyze_image(content: str = Form(...),
-    threadID: str | None = Form(None),
+async def analyze_image(
     image: UploadFile = File(...)
 ):
     # Create a Message instance from form fields
-    message = Message(threadID=threadID, content=content)
+    message = Message(threadID="", content="")
 
     # Read and encode image
     image_bytes = await image.read()

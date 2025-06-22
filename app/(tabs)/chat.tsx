@@ -138,60 +138,70 @@ export default function ChatScreen() {
   // };
 
   const handleImageUpload = async () => {
-     // Ask for permission to access media library
-  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (status !== 'granted') {
-    alert('Permission denied!');
-    return;
-  }
+    // Ask for permission to access media library
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Permission denied!');
+      return;
+    }
 
-  // Open image picker
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    allowsEditing: true,
-    aspect: [4, 3],
-    quality: 1,
-  });
-
-  // If user cancels
-  if (result.canceled || !result.assets || result.assets.length === 0) {
-    console.log('No image selected');
-    return;
-  }
-
-  const image = result.assets[0];
-  const localUri = image.uri;
-  const filename = localUri.split('/').pop();
-
-  // Infer the file type
-  const match = /\.(\w+)$/.exec(filename ?? '');
-  const type = match ? `image/${match[1]}` : `image`;
-
-  // Prepare form data
-  const formData = new FormData();
-  formData.append('image', {
-    uri: localUri,
-    name: filename,
-    type,
-  });
-  formData.append('threadID', "");
-  formData.append('content', "");
-
-  try {
-    const response = await fetch('http://127.0.0.1:8000/test-openai-gemini/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      body: formData,
+    // Open image picker
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
     });
 
-    const data = await response.json();
-    console.log('Server response:', data);
-  } catch (error) {
-    console.error('Upload failed:', error);
-  }
+    // If user cancels
+    if (result.canceled || !result.assets || result.assets.length === 0) {
+      console.log('No image selected');
+      return;
+    }
 
+    const image = result.assets[0];
+    const localUri = image.uri;
+
+    setIsTyping(true);
+
+    try {
+      // Convert image URI to blob (like the curl request does)
+      const response = await fetch(localUri);
+      const blob = await response.blob();
+      
+      const formData = new FormData();
+      formData.append('image', blob, 'image.jpg');
+
+      const apiResponse = await fetch('http://127.0.0.1:8000/test-openai-gemini/', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!apiResponse.ok) {
+        const errorText = await apiResponse.text();
+        console.error('Server error:', apiResponse.status, errorText);
+        throw new Error(`Server error: ${apiResponse.status}`);
+      }
+
+      const data = await apiResponse.json();
+      console.log('Server response:', data);
+
+      // Create AI response message
+      const aiResponse: Message = {
+        id: Date.now().toString(),
+        text: data.openai_response || "Image analyzed successfully.",
+        sender: 'ai',
+        timestamp: new Date(),
+        type: 'diagnosis'
+      };
+
+      setMessages(prev => [...prev, aiResponse]);
+    } catch (error) {
+      console.error('Upload failed:', error);
+      Alert.alert("Error", "Failed to analyze image. Please try again.");
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   const renderMessage = (message: Message) => {
