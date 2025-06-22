@@ -28,24 +28,29 @@ async def sendMessage(message: Message):
 
 @router.post("/analyze-image/")
 async def analyze_image(
-    image: UploadFile = File(...)
+    image: UploadFile = File(...),
+    threadID: str = Form("")
 ):
-    # Create a Message instance from form fields
-    message = Message(threadID="", content="")
-
-    # Read and encode image
+    """
+    Analyzes an uploaded image and sends the analysis to the chat.
+    - Receives an image and an optional threadID.
+    - If threadID is provided, uses the existing conversation.
+    - If threadID is empty, creates a new conversation.
+    """
+    # Read and encode the image in base64
     image_bytes = await image.read()
     image_b64 = base64.b64encode(image_bytes).decode("utf-8")
 
-    # Call your image processing and Gemini logic
-    result = await processImage(image_b64)
+    # Process the image with the Gemini handler to get the analysis
+    analysis_result = await processImage(image_b64)
 
+    # Send the analysis result as a message to the chat
     gemini_result = await sendMessage(
-        Message(threadID=message.threadID, content=str(result))
+        Message(threadID=threadID, content=str(analysis_result))
     )
 
     return {
-        "analysis": result,
+        "analysis": analysis_result,
         "gemini_result": gemini_result
     }
 
