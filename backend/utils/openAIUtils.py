@@ -2,11 +2,12 @@ import time
 from dotenv import load_dotenv
 import requests
 import os
+import certifi
 
 from pymongo import MongoClient
 
 MONGO_URI = os.getenv("MONGO_URI")
-client = MongoClient(MONGO_URI)
+client = MongoClient(MONGO_URI, tlsCAFile=certifi.where())
 db = client["user_info"]
 collection = db["workers"]
 
