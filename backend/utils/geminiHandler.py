@@ -1,35 +1,60 @@
 import os
 from dotenv import load_dotenv
 from typing import Dict, Any, Optional
+import genai  # Make sure this package is installed
 
 # Load environment variables
 load_dotenv()
 
-async def processImage(image_b64: str) -> str:
+async def processImage(image_b64: str) -> Dict[str, Any]:
     """
-    Mock image analysis for testing purposes
-    Returns a JSON string with analysis results
+    Analyze an image using Google's Gemini Pro Vision API
+    Returns a dictionary with analysis results
     """
     try:
-        # Mock analysis result for testing
-        mock_result = {
-            "identified_object": "Plumbing fixture with visible damage",
-            "issues": [
-                "Water leak from pipe connection",
-                "Corrosion on metal components", 
-                "Potential seal failure",
-                "Water damage to surrounding area"
-            ],
-            "category": "plumbing",
-            "subcategory": "pipe_repair",
-            "urgency": 4,
-            "tags": ["leak", "corrosion", "urgent", "professional_required"]
-        }
+        # Set up Gemini model
+        model = genai.GenerativeModel('gemini-2.5-flash')
         
-        import json
-        return json.dumps(mock_result)
+        prompt = """
+        You're a professional home repair expert. Analyze this image of a problem and:
+        1. Identify what's broken or malfunctioning
+        2. List 3-5 specific issues that could be causing the problem
+        3. Categorize the problem (plumbing, electrical, appliance, etc.)
+        4. Rate how urgent this issue is (1-5, where 5 is most urgent)
+        
+        Format your response as JSON with the following structure:
+        {
+          "identified_object": "brief description of what is shown",
+          "issues": ["issue 1", "issue 2", "issue 3"],
+          "category": "primary category",
+          "subcategory": "specific subcategory",
+          "urgency": integer from 1-5,
+          "tags": ["tag1", "tag2", "tag3"]
+        }
+        """
+        
+        # Call Gemini API
+        response = model.generate_content(
+            [prompt, {"mime_type": "image/jpeg", "data": image_b64}],
+            generation_config={"response_mime_type": "application/json"}
+        )
+        
+        # Parse response
+        result = response.text
+        
+        # For a hackathon, we could do further post-processing here
+        # In production, we'd do proper JSON validation and error handling
+        
+        return result
         
     except Exception as e:
-        print(f"Error in mock analysis: {str(e)}")
-        # Fallback result
-        return '{"identified_object": "Unable to analyze image", "issues": ["Unknown issue"], "category": "general", "subcategory": "unknown", "urgency": 1, "tags": ["unidentified_problem"]}'
+        print(f"Error in Gemini analysis: {str(e)}")
+        # Fallback result for hackathon purposes
+        return {
+            "identified_object": "Unable to analyze image",
+            "issues": ["Unknown issue"],
+            "category": "general",
+            "subcategory": "unknown",
+            "urgency": 1,
+            "tags": ["unidentified_problem"]
+        }

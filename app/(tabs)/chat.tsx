@@ -25,6 +25,7 @@ export default function ChatScreen() {
   ]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [threadId, setThreadId] = useState<string>('');
   const scrollViewRef = useRef<ScrollView>(null);
 
   const quickSuggestions = [
@@ -60,12 +61,16 @@ export default function ChatScreen() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          threadID: "",  // Empty string for new thread, or pass existing threadID
+          threadID: threadId,  // Use threadId from state
           content: text.trim()
         })
       });
   
       const data = await response.json();
+
+      if (data.threadID) {
+        setThreadId(data.threadID); // Save the threadID
+      }
   
       const aiResponse: Message = {
         id: Date.now().toString(),
@@ -161,44 +166,62 @@ export default function ChatScreen() {
 
     const image = result.assets[0];
     const localUri = image.uri;
-
+    const filename = image.fileName || `image_${Date.now()}.jpg`;
+    const match = /\.(\w+)$/.exec(filename);
+    const type = match ? `image/${match[1]}` : `image`;
+  
+    setMessages(prev => [...prev, userMessage]);
     setIsTyping(true);
-
+  
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('image', {
+      uri: localUri,
+      name: filename,
+      type,
+    } as any);
+    formData.append('threadID', threadId); // Send threadId
+  
     try {
-      // Convert image URI to blob (like the curl request does)
-      const response = await fetch(localUri);
-      const blob = await response.blob();
-      
-      const formData = new FormData();
-      formData.append('image', blob, 'image.jpg');
-
-      const apiResponse = await fetch('http://127.0.0.1:8000/test-openai-gemini/', {
+      // Use the /analyze-image/ endpoint
+      const response = await fetch('http://127.0.0.1:8000/analyze-image/', {
         method: 'POST',
         body: formData,
+        // Let fetch set the Content-Type header automatically for multipart/form-data
       });
-
-      if (!apiResponse.ok) {
-        const errorText = await apiResponse.text();
-        console.error('Server error:', apiResponse.status, errorText);
-        throw new Error(`Server error: ${apiResponse.status}`);
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+  
+      const data = await response.json();
 
-      const data = await apiResponse.json();
-      console.log('Server response:', data);
-
-      // Create AI response message
+      // Save threadID from response
+      if (data.gemini_result && data.gemini_result.threadID) {
+        setThreadId(data.gemini_result.threadID);
+      }
+  
+      // Add the AI's response to the chat
       const aiResponse: Message = {
         id: Date.now().toString(),
-        text: data.openai_response || "Image analyzed successfully.",
+        // Parse the correct response field
+        text: data.gemini_result.message2 || "Sorry, I couldn't analyze the image.",
         sender: 'ai',
         timestamp: new Date(),
-        type: 'diagnosis'
+        type: 'diagnosis', // Or another appropriate type
       };
-
       setMessages(prev => [...prev, aiResponse]);
+  
     } catch (error) {
-      console.error('Upload failed:', error);
-      Alert.alert("Error", "Failed to analyze image. Please try again.");
+      console.error('Image upload failed:', error);
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        text: "Sorry, there was an error uploading your image. Please try again.",
+        sender: 'ai',
+        timestamp: new Date(),
+        type: 'text',
+      };
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsTyping(false);
     }
