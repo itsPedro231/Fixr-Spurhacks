@@ -3,6 +3,14 @@ from dotenv import load_dotenv
 import requests
 import os
 
+from pymongo import MongoClient
+
+MONGO_URI = os.getenv("MONGO_URI")
+client = MongoClient(MONGO_URI)
+db = client["user_info"]
+collection = db["workers"]
+
+
 load_dotenv()
 API_KEY = os.getenv("OPENAI_API_KEY")
 url = "https://api.openai.com/v1/threads"
@@ -34,6 +42,7 @@ ASSISTANT_ID = "asst_5zx40an5r0WAoiHfQG2YVyCJ"
 
 
 def postMessage(threadID, content):
+    content += getData()
     res = requests.post(
         f"https://api.openai.com/v1/threads/{threadID}/messages",
         headers={
@@ -103,7 +112,32 @@ def runThread(threadID):
     return None
 
 def getData():
-    return 
+    results = collection.find() #think of this as a list you can loop through containing all the records inside the collection of workers
+    output = ""
+    for doc in results:
+        name = doc.get("name", "Unknown")
+        worker_type = doc.get("type", "N/A")
+        location = doc.get("location", "N/A")
+        phone = doc.get("phone", "N/A")
+        rating = doc.get("rating", "N/A")
+        services = ", ".join(doc.get("services", []))
+        availability = doc.get("availability", True)
+
+        availability_str = "Available" if availability else "Not Available"
+        
+        output += (
+            f"Name: {name}\n"
+            f"Type: {worker_type}\n"
+            f"Location: {location}\n"
+            f"Phone: {phone}\n"
+            f"Rating: {rating}\n"
+            f"Services: {services}\n"
+            f"Availability: {availability_str}\n"
+            "------------------------\n"
+        )
+
+    return output
+ 
 # def getMessage(threadID):
 #    url = f"https://api.openai.com/v1/threads/{threadID}/messages"
 #    headers = {
