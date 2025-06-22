@@ -51,57 +51,128 @@ export default function ChatScreen() {
     setInputText('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse = generateAIResponse(text.trim());
+    try {
+      const response = await fetch('http://127.0.0.1:8000/send-message-gpt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          threadID: "some-thread-id",  // you can pass your threadID if needed
+          content: text.trim()
+        })
+      });
+  
+      const data = await response.json();
+  
+      const aiResponse: Message = {
+        id: Date.now().toString(),
+        text: data.reply,  // this depends on how your backend returns the result
+        sender: 'ai',
+        timestamp: new Date(),
+        type: 'text'  // if your backend returns a type, you can set it dynamically
+      };
+  
       setMessages(prev => [...prev, aiResponse]);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      // optionally show error message to user
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
-
-  const generateAIResponse = (userInput: string): Message => {
-    const lowerInput = userInput.toLowerCase();
+  // const generateAIResponse = (userInput: string): Message => {
+  //   const lowerInput = userInput.toLowerCase();
     
-    if (lowerInput.includes('leak') || lowerInput.includes('drip')) {
-      return {
-        id: Date.now().toString(),
-        text: "I can help with that leak! First, turn off the water supply to prevent damage. Can you tell me where exactly it's leaking? Is it from a faucet, pipe, or fixture? Also, when did you first notice it?",
-        sender: 'ai',
-        timestamp: new Date(),
-        type: 'diagnosis'
-      };
-    } else if (lowerInput.includes('electrical') || lowerInput.includes('outlet') || lowerInput.includes('power')) {
-      return {
-        id: Date.now().toString(),
-        text: "⚠️ Safety first! If it's an electrical issue, please don't touch any exposed wires. Check your circuit breaker first - has it tripped? For outlet issues, try testing with different devices. If the problem persists, I recommend calling a licensed electrician.",
-        sender: 'ai',
-        timestamp: new Date(),
-        type: 'warning'
-      };
-    } else if (lowerInput.includes('emergency') || lowerInput.includes('urgent')) {
-      return {
-        id: Date.now().toString(),
-        text: "I understand this is urgent. Can you describe the emergency? For immediate safety concerns like gas leaks, electrical hazards, or flooding, please call emergency services first. I can help you find 24/7 emergency technicians in your area.",
-        sender: 'ai',
-        timestamp: new Date(),
-        type: 'warning'
-      };
-    } else if (lowerInput.includes('ac') || lowerInput.includes('air') || lowerInput.includes('hvac')) {
-      return {
-        id: Date.now().toString(),
-        text: "Let's troubleshoot your AC issue. Is it not turning on, not cooling properly, or making unusual noises? Here are some quick checks: 1) Check your thermostat settings, 2) Replace air filter if dirty, 3) Check circuit breaker. What specific problem are you experiencing?",
-        sender: 'ai',
-        timestamp: new Date(),
-        type: 'suggestion'
-      };
-    } else {
-      return {
-        id: Date.now().toString(),
-        text: "Thanks for sharing that information. To better assist you, could you provide more details about the problem? For example: When did it start? What have you tried already? Any unusual sounds, smells, or visible damage?",
-        sender: 'ai',
-        timestamp: new Date(),
-        type: 'text'
-      };
+  //   if (lowerInput.includes('leak') || lowerInput.includes('drip')) {
+  //     return {
+  //       id: Date.now().toString(),
+  //       text: "I can help with that leak! First, turn off the water supply to prevent damage. Can you tell me where exactly it's leaking? Is it from a faucet, pipe, or fixture? Also, when did you first notice it?",
+  //       sender: 'ai',
+  //       timestamp: new Date(),
+  //       type: 'diagnosis'
+  //     };
+  //   } else if (lowerInput.includes('electrical') || lowerInput.includes('outlet') || lowerInput.includes('power')) {
+  //     return {
+  //       id: Date.now().toString(),
+  //       text: "⚠️ Safety first! If it's an electrical issue, please don't touch any exposed wires. Check your circuit breaker first - has it tripped? For outlet issues, try testing with different devices. If the problem persists, I recommend calling a licensed electrician.",
+  //       sender: 'ai',
+  //       timestamp: new Date(),
+  //       type: 'warning'
+  //     };
+  //   } else if (lowerInput.includes('emergency') || lowerInput.includes('urgent')) {
+  //     return {
+  //       id: Date.now().toString(),
+  //       text: "I understand this is urgent. Can you describe the emergency? For immediate safety concerns like gas leaks, electrical hazards, or flooding, please call emergency services first. I can help you find 24/7 emergency technicians in your area.",
+  //       sender: 'ai',
+  //       timestamp: new Date(),
+  //       type: 'warning'
+  //     };
+  //   } else if (lowerInput.includes('ac') || lowerInput.includes('air') || lowerInput.includes('hvac')) {
+  //     return {
+  //       id: Date.now().toString(),
+  //       text: "Let's troubleshoot your AC issue. Is it not turning on, not cooling properly, or making unusual noises? Here are some quick checks: 1) Check your thermostat settings, 2) Replace air filter if dirty, 3) Check circuit breaker. What specific problem are you experiencing?",
+  //       sender: 'ai',
+  //       timestamp: new Date(),
+  //       type: 'suggestion'
+  //     };
+  //   } else {
+  //     return {
+  //       id: Date.now().toString(),
+  //       text: "Thanks for sharing that information. To better assist you, could you provide more details about the problem? For example: When did it start? What have you tried already? Any unusual sounds, smells, or visible damage?",
+  //       sender: 'ai',
+  //       timestamp: new Date(),
+  //       type: 'text'
+  //     };
+  //   }
+  // };
+
+  const handleImageUpload = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.cancelled && result.assets && result.assets.length > 0) {
+      const image = result.assets[0];
+
+      const formData = new FormData();
+      formData.append('image', {
+        uri: image.uri,
+        name: 'photo.jpg',
+        type: 'image/jpeg',
+      } as any);
+
+      setIsTyping(true);
+
+      try {
+        const response = await fetch('http://<YOUR_BACKEND_URL>/analyze-image', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          body: formData,
+        });
+
+        const data = await response.json();
+
+        const aiResponse: Message = {
+          id: Date.now().toString(),
+          text: data.analysis || "Image analyzed successfully.",
+          sender: 'ai',
+          timestamp: new Date(),
+          type: 'diagnosis'
+        };
+
+        setMessages(prev => [...prev, aiResponse]);
+      } catch (error) {
+        console.error('Error analyzing image:', error);
+        Alert.alert("Error", "Failed to analyze image.");
+      } finally {
+        setIsTyping(false);
+      }
     }
   };
 
@@ -186,7 +257,7 @@ export default function ChatScreen() {
             <Text style={styles.headerSubtitle}>Available 24/7 • Instant Help</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.cameraButton}>
+        <TouchableOpacity style={styles.cameraButton} onPress={handleImageUpload}>
           <Camera size={20} color="#6B7280" />
         </TouchableOpacity>
       </View>
