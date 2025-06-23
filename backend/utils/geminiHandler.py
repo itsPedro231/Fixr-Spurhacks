@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from typing import Dict, Any, Optional
 import google.generativeai as genai  # Make sure this package is installed
+import json
 
 # Load environment variables
 load_dotenv()
@@ -14,7 +15,7 @@ async def processImage(image_b64: str) -> Dict[str, Any]:
     """
     try:
         # Set up Gemini model
-        model = genai.GenerativeModel('gemini-2.5-flash')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         
         prompt = """
         You're a professional home repair expert. Analyze this image of a problem and:
@@ -41,7 +42,7 @@ async def processImage(image_b64: str) -> Dict[str, Any]:
         )
         
         # Parse response
-        result = response.text
+        result = json.loads(response.text)
         
         # For a hackathon, we could do further post-processing here
         # In production, we'd do proper JSON validation and error handling

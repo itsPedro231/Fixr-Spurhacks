@@ -65,6 +65,12 @@ export default function ChatScreen() {
           content: text.trim()
         })
       });
+
+      if (!response.ok) {
+        // Handle HTTP errors from the backend
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+      }
   
       const data = await response.json();
 
@@ -74,19 +80,19 @@ export default function ChatScreen() {
   
       const aiResponse: Message = {
         id: Date.now().toString(),
-        text: data.message2 || "Sorry, I couldn't process your request.",  // Updated to match backend response
+        text: data.message2 || "Sorry, I couldn't process your request.",
         sender: 'ai',
         timestamp: new Date(),
         type: 'text'
       };
   
       setMessages(prev => [...prev, aiResponse]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error sending message:", error);
-      // Show error message to user
+      // Show specific error message from backend or a generic one
       const errorMessage: Message = {
         id: Date.now().toString(),
-        text: "Sorry, there was an error processing your message. Please try again.",
+        text: error.message || "Sorry, there was an error processing your message. Please try again.",
         sender: 'ai',
         timestamp: new Date(),
         type: 'text'
@@ -156,6 +162,7 @@ export default function ChatScreen() {
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
+      // No base64 needed for FormData
     });
 
     // If user cancels
@@ -167,31 +174,39 @@ export default function ChatScreen() {
     const image = result.assets[0];
     const localUri = image.uri;
     const filename = image.fileName || `image_${Date.now()}.jpg`;
-    const match = /\.(\w+)$/.exec(filename);
-    const type = match ? `image/${match[1]}` : `image`;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: `Uploading ${filename}...`,
+      sender: 'user',
+      timestamp: new Date(),
+      type: 'text',
+    };
   
     setMessages(prev => [...prev, userMessage]);
     setIsTyping(true);
   
-    // Prepare form data
-    const formData = new FormData();
-    formData.append('image', {
-      uri: localUri,
-      name: filename,
-      type,
-    } as any);
-    formData.append('threadID', threadId); // Send threadId
-  
     try {
-      // Use the /analyze-image/ endpoint
+      // Convert image URI to blob to ensure it's sent as a file
+      const fileResponse = await fetch(localUri);
+      const blob = await fileResponse.blob();
+
+      // Prepare form data, which works like a curl request for file uploads
+      const formData = new FormData();
+      formData.append('image', blob, filename);
+      formData.append('threadID', threadId);
+  
+      // Use the /analyze-image/ endpoint with FormData
       const response = await fetch('http://127.0.0.1:8000/analyze-image/', {
         method: 'POST',
         body: formData,
-        // Let fetch set the Content-Type header automatically for multipart/form-data
+        // When using FormData, do not set 'Content-Type' header.
+        // Fetch will automatically set it to 'multipart/form-data' with the correct boundary.
       });
   
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorBody = await response.text();
+        throw new Error(`HTTP error! status: ${response.status} - ${errorBody}`);
       }
   
       const data = await response.json();
@@ -212,11 +227,11 @@ export default function ChatScreen() {
       };
       setMessages(prev => [...prev, aiResponse]);
   
-    } catch (error) {
+    } catch (error: any) {
       console.error('Image upload failed:', error);
       const errorMessage: Message = {
         id: Date.now().toString(),
-        text: "Sorry, there was an error uploading your image. Please try again.",
+        text: error.message || "Sorry, there was an error uploading your image. Please try again.",
         sender: 'ai',
         timestamp: new Date(),
         type: 'text',

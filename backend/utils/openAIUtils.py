@@ -43,7 +43,10 @@ ASSISTANT_ID = "asst_5zx40an5r0WAoiHfQG2YVyCJ"
 
 
 def postMessage(threadID, content):
-    content += getData()
+    contextual_data = getData()
+    if contextual_data:
+        content += "\n\n--- AVAILABLE PROFESSIONALS ---\n" + contextual_data
+    
     res = requests.post(
         f"https://api.openai.com/v1/threads/{threadID}/messages",
         headers={
@@ -139,33 +142,3 @@ def getData():
 
     return output
  
-# def getMessage(threadID):
-#    url = f"https://api.openai.com/v1/threads/{threadID}/messages"
-#    headers = {
-#        "Content-Type": "application/json",
-#        "Authorization": f"Bearer {API_KEY}",
-#        "OpenAI-Beta": "assistants=v2",
-#    }
-#    # params = {"limit": "2", "order": "desc"}
-#    try:
-#        response = requests.get(
-#            url,
-#            headers=headers,
-#        )
-#
-#        print(response)
-#        if response.status_code == 200:
-#            data = response.json()
-#            message = data["data"][0]["content"][0]["text"]["value"]
-#            return message
-#        else:
-#            print(
-#                f"Failed to get gpt message: {response.status_code} - {response.text}"
-#            )
-#            return None
-#
-#    except Exception as e:
-#        print(f"Error while getting gpt message: {e}")
-#        return None
-#
-
