@@ -10,7 +10,7 @@ const app = express();
 // CORS configuration for production
 const corsOptions = {
   origin: [
-    'https://fixr-klkul3cce-sukhmans-projects-1d733bc6.vercel.app/auth', // Replace with your Vercel URL
+    'https://fixr-klkul3cce-sukhmans-projects-1d733bc6.vercel.app', // Replace with your Vercel URL
     'http://localhost:3000',
     'http://localhost:8081',
     'exp://localhost:8081'
