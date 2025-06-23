@@ -10,7 +10,8 @@ const app = express();
 // CORS configuration for production
 const corsOptions = {
   origin: [
-    'https://fixr-klkul3cce-sukhmans-projects-1d733bc6.vercel.app', // Replace with your Vercel URL
+    'https://fixr-klkul3cce-sukhmans-projects-1d733bc6.vercel.app', // Your Vercel URL
+    'https://fixr.vercel.app', // Alternative Vercel URL
     'http://localhost:3000',
     'http://localhost:8081',
     'exp://localhost:8081'
@@ -22,6 +23,15 @@ const corsOptions = {
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
+
+// Test endpoint
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    message: 'API is working!',
+    timestamp: new Date().toISOString(),
+    mongodb_connected: mongoose.connection.readyState === 1
+  });
+});
 
 // Routes
 app.use('/api/auth', authRoutes);

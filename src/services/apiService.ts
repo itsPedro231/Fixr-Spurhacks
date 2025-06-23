@@ -1,8 +1,9 @@
 // src/services/apiService.ts
 import axios from 'axios';
 
-// Use environment variable for API URL, fallback to localhost for development
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+// Use environment variables for API URLs, fallback to localhost for development
+const NODE_API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5012';
+const PYTHON_API_URL = process.env.EXPO_PUBLIC_AI_API_URL || 'http://127.0.0.1:8000';
 
 // Types
 export interface Message {
@@ -32,16 +33,18 @@ export interface ProblemFormData {
 
 // API Service class
 class ApiService {
-  private baseURL: string;
+  private nodeApiURL: string;
+  private pythonApiURL: string;
 
-  constructor(baseURL: string = API_BASE_URL) {
-    this.baseURL = baseURL;
+  constructor() {
+    this.nodeApiURL = NODE_API_URL;
+    this.pythonApiURL = PYTHON_API_URL;
   }
 
-  // Send message to GPT
+  // Send message to GPT (Python API)
   async sendMessage(message: Message): Promise<ChatResponse> {
     try {
-      const response = await axios.post(`${this.baseURL}/send-message-gpt`, message);
+      const response = await axios.post(`${this.pythonApiURL}/send-message-gpt`, message);
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -51,7 +54,7 @@ class ApiService {
     }
   }
 
-  // Analyze image with AI
+  // Analyze image with AI (Python API)
   async analyzeImage(imageUri: string, message: Message): Promise<ImageAnalysisResponse> {
     try {
       const formData = new FormData();
@@ -62,7 +65,7 @@ class ApiService {
       } as any);
       formData.append('message', JSON.stringify(message));
 
-      const response = await axios.post(`${this.baseURL}/analyze-image/`, formData, {
+      const response = await axios.post(`${this.pythonApiURL}/analyze-image/`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -76,7 +79,7 @@ class ApiService {
     }
   }
 
-  // Test OpenAI + Gemini integration
+  // Test OpenAI + Gemini integration (Python API)
   async testOpenAIGemini(imageUri: string): Promise<{ openai_response: string }> {
     try {
       const formData = new FormData();
@@ -86,7 +89,7 @@ class ApiService {
         type: 'image/jpeg',
       } as any);
 
-      const response = await axios.post(`${this.baseURL}/test-openai-gemini/`, formData, {
+      const response = await axios.post(`${this.pythonApiURL}/test-openai-gemini/`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
