@@ -6,34 +6,16 @@ import certifi
 
 from pymongo import MongoClient
 
-# Load environment variables first
-load_dotenv()
+MONGO_URI = os.getenv("MONGO_URI")
+client = MongoClient(MONGO_URI, tlsCAFile=certifi.where())
+db = client["user_info"]
+collection = db["workers"]
 
-MONGO_URI = os.getenv("MONGODB_URI")
+
+load_dotenv()
 API_KEY = os.getenv("OPENAI_API_KEY")
 url = "https://api.openai.com/v1/threads"
 
-# Initialize MongoDB connection with error handling
-client = None
-db = None
-collection = None
-
-try:
-    if MONGO_URI:
-        client = MongoClient(MONGO_URI, tlsCAFile=certifi.where())
-        db = client["user_info"]
-        collection = db["workers"]
-        # Test the connection
-        client.admin.command('ping')
-        print("MongoDB connection successful")
-    else:
-        print("Warning: MONGODB_URI not set")
-except Exception as e:
-    print(f"MongoDB connection failed: {e}")
-    # Set to None so we can handle it gracefully
-    client = None
-    db = None
-    collection = None
 
 def createThread():
     headers = {
@@ -134,35 +116,29 @@ def runThread(threadID):
     return None
 
 def getData():
-    if collection is None:
-        return "No database connection available"
-    
-    try:
-        results = collection.find() #think of this as a list you can loop through containing all the records inside the collection of workers
-        output = ""
-        for doc in results:
-            name = doc.get("name", "Unknown")
-            worker_type = doc.get("type", "N/A")
-            location = doc.get("location", "N/A")
-            phone = doc.get("phone", "N/A")
-            rating = doc.get("rating", "N/A")
-            services = ", ".join(doc.get("services", []))
-            availability = doc.get("availability", True)
+    results = collection.find() #think of this as a list you can loop through containing all the records inside the collection of workers
+    output = ""
+    for doc in results:
+        name = doc.get("name", "Unknown")
+        worker_type = doc.get("type", "N/A")
+        location = doc.get("location", "N/A")
+        phone = doc.get("phone", "N/A")
+        rating = doc.get("rating", "N/A")
+        services = ", ".join(doc.get("services", []))
+        availability = doc.get("availability", True)
 
-            availability_str = "Available" if availability else "Not Available"
-            
-            output += (
-                f"Name: {name}\n"
-                f"Type: {worker_type}\n"
-                f"Location: {location}\n"
-                f"Phone: {phone}\n"
-                f"Rating: {rating}\n"
-                f"Services: {services}\n"
-                f"Availability: {availability_str}\n"
-                "------------------------\n"
-            )
+        availability_str = "Available" if availability else "Not Available"
+        
+        output += (
+            f"Name: {name}\n"
+            f"Type: {worker_type}\n"
+            f"Location: {location}\n"
+            f"Phone: {phone}\n"
+            f"Rating: {rating}\n"
+            f"Services: {services}\n"
+            f"Availability: {availability_str}\n"
+            "------------------------\n"
+        )
 
-        return output
-    except Exception as e:
-        return f"Error accessing database: {e}"
+    return output
  
