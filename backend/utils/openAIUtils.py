@@ -75,8 +75,17 @@ def runThread(threadID):
         json={"assistant_id": ASSISTANT_ID},
     )
 
+    if not res.ok:
+        print(f"Error starting run: {res.status_code} - {res.text}")
+        return None
+
     run_data = res.json()
-    run_id = run_data["id"]
+    run_id = run_data.get("id")
+
+    if not run_id:
+        print(f"Error: 'id' not found in run creation response: {run_data}")
+        return None
+
 
     # Step 2: Poll until run is complete
     while True:
@@ -98,19 +107,36 @@ def runThread(threadID):
 
     # Step 3: Get final messages if completed
     if status == "completed":
-        messages_response = requests.get(
-            f"https://api.openai.com/v1/threads/{threadID}/messages", headers=HEADERS
-        )
+        return getMessages(threadID)
+    else:
+        print(f"Run finished with status: {status}")
+        return None, threadID
 
-        if not messages_response.ok:
-            return None
 
-        messages = messages_response.json()["data"]
-        return messages[0]["content"][0]["text"][
-            "value"
-        ]  # Return last assistant message
+def getMessages(threadID):
+    res = requests.get(
+        f"https://api.openai.com/v1/threads/{threadID}/messages", headers=HEADERS
+    )
 
-    return None
+    if res.status_code == 200:
+        messages_data = res.json()
+        messages = messages_data.get("data", [])
+        if not messages:
+            return None, threadID
+
+        # Find the most recent message from the assistant
+        for message in sorted(messages, key=lambda x: x.get('created_at', 0), reverse=True):
+            if message.get('role') == 'assistant':
+                content = message.get('content', [])
+                if content and content[0].get('type') == 'text':
+                    return content[0]['text'].get('value'), threadID
+
+        return None, threadID  # No assistant message found
+
+    else:
+        print(f"Failed to get messages: {res.status_code} - {res.text}")
+        return None, threadID
+
 
 def getData():
     results = collection.find() #think of this as a list you can loop through containing all the records inside the collection of workers

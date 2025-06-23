@@ -1,10 +1,12 @@
 import os
 from dotenv import load_dotenv
-from typing import Dict, Any, Optional
-import genai  # Make sure this package is installed
+from typing import Dict, Any
+import google.generativeai as genai
+import json
 
 # Load environment variables
 load_dotenv()
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 async def processImage(image_b64: str) -> Dict[str, Any]:
     """
@@ -40,7 +42,7 @@ async def processImage(image_b64: str) -> Dict[str, Any]:
         )
         
         # Parse response
-        result = response.text
+        result = json.loads(response.text)
         
         # For a hackathon, we could do further post-processing here
         # In production, we'd do proper JSON validation and error handling
