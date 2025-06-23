@@ -7,7 +7,8 @@ app = FastAPI(title="Fixr AI API", version="1.0.0")
 
 # CORS configuration for production
 origins = [
-    "https://fixr-klkul3cce-sukhmans-projects-1d733bc6.vercel.app",  # Replace with your Vercel URL
+    "https://fixr-eta.vercel.app",  # Your actual Vercel URL
+    "https://fixr-klkul3cce-sukhmans-projects-1d733bc6.vercel.app",
     "http://localhost:3000",
     "http://localhost:8081",
     "exp://localhost:8081"

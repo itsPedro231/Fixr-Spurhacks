@@ -10,8 +10,9 @@ const app = express();
 // CORS configuration for production
 const corsOptions = {
   origin: [
-    'https://fixr-klkul3cce-sukhmans-projects-1d733bc6.vercel.app', // Your Vercel URL
-    'https://fixr.vercel.app', // Alternative Vercel URL
+    'https://fixr-eta.vercel.app', // Your actual Vercel URL
+    'https://fixr-klkul3cce-sukhmans-projects-1d733bc6.vercel.app',
+    'https://fixr.vercel.app',
     'http://localhost:3000',
     'http://localhost:8081',
     'exp://localhost:8081'
