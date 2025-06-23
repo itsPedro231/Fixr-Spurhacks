@@ -4,6 +4,9 @@ test_images/
 # Backend files (not needed for frontend build)
 backend/
 
+# Build outputs (we use web-build for Vercel)
+dist/
+
 # Development files
 .env
 .env.local
