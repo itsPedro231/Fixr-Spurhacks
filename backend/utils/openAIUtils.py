@@ -76,7 +76,7 @@ def runThread(threadID):
     )
 
     run_data = res.json()
-    run_id = run_data["id"]
+    run_id = run_data.get("id")
 
     # Step 2: Poll until run is complete
     while True:

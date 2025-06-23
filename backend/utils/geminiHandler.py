@@ -1,10 +1,11 @@
 import os
 from dotenv import load_dotenv
 from typing import Dict, Any, Optional
-import genai  # Make sure this package is installed
+import google.generativeai as genai  # Make sure this package is installed
 
 # Load environment variables
 load_dotenv()
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 async def processImage(image_b64: str) -> Dict[str, Any]:
     """
