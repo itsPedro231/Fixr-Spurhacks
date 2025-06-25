@@ -6,7 +6,7 @@ import certifi
 
 from pymongo import MongoClient
 
-MONGO_URI = os.getenv("MONGO_URI")
+MONGO_URI = os.getenv("MONGODB_URI")
 client = MongoClient(MONGO_URI, tlsCAFile=certifi.where())
 db = client["user_info"]
 collection = db["workers"]

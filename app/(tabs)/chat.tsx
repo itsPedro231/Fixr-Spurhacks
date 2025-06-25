@@ -13,6 +13,8 @@ interface Message {
   type?: 'text' | 'suggestion' | 'diagnosis' | 'warning';
 }
 
+const PYTHON_API_URL = process.env.EXPO_PUBLIC_AI_API_URL || 'https://fixr-python-api.onrender.com';
+
 export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -55,7 +57,7 @@ export default function ChatScreen() {
     setIsTyping(true);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/send-message-gpt', {
+      const response = await fetch(`${PYTHON_API_URL}/send-message-gpt`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -197,7 +199,7 @@ export default function ChatScreen() {
       formData.append('threadID', threadId);
   
       // Use the /analyze-image/ endpoint with FormData
-      const response = await fetch('http://127.0.0.1:8000/analyze-image/', {
+      const response = await fetch(`${PYTHON_API_URL}/analyze-image/`, {
         method: 'POST',
         body: formData,
         // When using FormData, do not set 'Content-Type' header.

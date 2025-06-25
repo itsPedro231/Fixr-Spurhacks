@@ -23,9 +23,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Root endpoint for keep-alive (supports both GET and HEAD)
+@app.get("/")
+@app.head("/")
+async def root():
+    return {"message": "Fixr AI API is running", "status": "OK"}
+
 app.include_router(api_router)
 
-# Health check endpoint
+# Health check endpoint (supports both GET and HEAD)
 @app.get("/health")
+@app.head("/health")
 async def health_check():
     return {"status": "OK", "service": "Fixr AI API"}
