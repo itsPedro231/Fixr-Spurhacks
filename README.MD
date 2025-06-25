@@ -104,5 +104,3 @@ GOOGLE_API_KEY=your_google_gemini_api_key
 MIT
 
 ---
-
-Let me know if you want this written directly to your `README.md` or if you want to customize any section!
