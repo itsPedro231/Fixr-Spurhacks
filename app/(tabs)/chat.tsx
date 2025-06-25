@@ -13,7 +13,7 @@ interface Message {
   type?: 'text' | 'suggestion' | 'diagnosis' | 'warning';
 }
 
-const PYTHON_API_URL = process.env.EXPO_PUBLIC_AI_API_URL || 'http://127.0.0.1:8000';
+const PYTHON_API_URL = process.env.EXPO_PUBLIC_AI_API_URL || 'https://fixr-python-api.onrender.com';
 
 export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>([
